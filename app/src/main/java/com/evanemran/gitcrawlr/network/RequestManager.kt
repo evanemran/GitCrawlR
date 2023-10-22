@@ -4,6 +4,7 @@ import android.content.Context
 import com.evanemran.gitcrawlr.config.AppConfig
 import com.evanemran.gitcrawlr.listeners.ApiInterface
 import com.evanemran.gitcrawlr.listeners.ResponseListener
+import com.evanemran.gitcrawlr.models.FeedItem
 import com.evanemran.gitcrawlr.models.FeedResponse
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -13,7 +14,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-class RequestManager(var context: Context) {
+class RequestManager() {
     val okHttpClient = OkHttpClient.Builder()
         .readTimeout(60, TimeUnit.SECONDS)
         .connectTimeout(60, TimeUnit.SECONDS)
@@ -37,7 +38,9 @@ class RequestManager(var context: Context) {
 
 
 
-    fun getFeed(listener: ResponseListener<FeedResponse>, keyword: String, sortBy: String) {
+    fun getFeed(keyword: String, sortBy: String) : List<FeedItem> {
+
+        var feedList: List<FeedItem> = mutableListOf()
 
         val call = retrofit.create(ApiInterface::class.java).search(keyword, sortBy)
         call.enqueue(object : Callback<FeedResponse> {
@@ -45,18 +48,15 @@ class RequestManager(var context: Context) {
                 call: Call<FeedResponse>,
                 response: Response<FeedResponse>
             ) {
-                if(!response.isSuccessful) {
-                    listener.didError(response.message())
-                    return
+                if(response.isSuccessful) {
+                    feedList = response.body()!!.items
                 }
-                response.body()?.let { listener.didFetch(response.message(), it) }
             }
-
             override fun onFailure(call: Call<FeedResponse>, t: Throwable) {
-                t.message?.let { listener.didError(it) }
-            }
 
+            }
         })
+        return  feedList
 
     }
 

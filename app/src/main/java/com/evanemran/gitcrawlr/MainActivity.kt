@@ -28,9 +28,9 @@ class MainActivity : AppCompatActivity() {
         dialog = ProgressDialog(this)
         dialog.setTitle("Loading")
 
-        val requestManager: RequestManager = RequestManager(this)
+        val requestManager: RequestManager = RequestManager()
 
-        requestManager.getFeed(headlineResponseListener, "Flutter", "stars")
+        requestManager.getFeed("Flutter", "stars")
         dialog.show()
     }
 
